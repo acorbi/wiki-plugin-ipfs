@@ -1,0 +1,37 @@
+{
+  "title": "About IpFs Plugin",
+  "story": [
+  {
+    "type": "paragraph",
+    "id": "2d4c0ff591e5bf45",
+    "text": "Here we describe the purpose of the plugin and include a sample."
+  },
+  {
+    "type": "ipfs",
+    "id": "bd844ba1bb4a1b10",
+    "text": "This is text in the new plugin. You can *double-click* to edit it too."
+  }
+],
+  "journal": [
+  {
+    "type": "create",
+    "item": {
+      "title": "About IpFs Plugin",
+      "story": [
+  {
+    "type": "paragraph",
+    "id": "2d4c0ff591e5bf45",
+    "text": "Here we describe the purpose of the plugin and include a sample."
+  },
+  {
+    "type": "ipfs",
+    "id": "bd844ba1bb4a1b10",
+    "text": "This is text in the new plugin. You can *double-click* to edit it too."
+  }
+]
+    },
+    "date": 1439568057000,
+    "certificate": "from mkplugin.sh"
+  }
+]
+}
