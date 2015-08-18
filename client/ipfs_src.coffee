@@ -1,6 +1,7 @@
 io = require('socket.io-client')
 socket = null 
 caption = null
+content = null
 
 initSocket = () ->
   console.log 'initSocket'
@@ -21,11 +22,26 @@ socketCmdReceived = (data) ->
   console.log 'socketCmdReceived ' + data['name'] 
   if data['name'] == 'ack' and data['cmd'] == 'ping'
     status 'Ping acknoledged'
+  else if data['name'] == 'ack' and data['cmd'] == 'add'
+    status 'Add acknoledged'
+  else if data['name'] == 'ack' and data['cmd'] == 'cat'
+    status 'Cat acknoledged'
+    content.html(data['data'])
 
 pingServer = () ->
   status 'Pingin...'
   initSocket if !socket
   socket.emit('cmd', {'name':'ping'}) 
+
+ipfsCat = (hash) -> 
+  status 'Running ipfsCat with hash ' + hash + '...'
+  initSocket if !socket
+  socket.emit('cmd', {'name':'cat','hash':hash})
+
+ipfsAdd = (asset) -> 
+  status 'Running ipfsAdd with asset ' + asset + '...'
+  initSocket if !socket
+  socket.emit('cmd', {'name':'add','asset':asset}) 
 
 status = (statusText) ->
   if caption != null
@@ -44,17 +60,22 @@ emit = ($item, item) ->
                  <p style="background-color:#ccc;padding:15px;">
                    #{expand item.text}
                  </p> 
+                 <div class="content"></div>
                  <p class="caption">Starting...</p>
                """
 
   if caption == null
     caption = $item.find(".caption")
+  if content == null
+    content = $item.find(".content")
 
   if socket == null
     initSocket() 
 
 bind = ($item, item) ->
   $item.dblclick -> wiki.textEditor $item, item 
+
+  ipfsCat(item.text)
 
 window.plugins.ipfs = {emit, bind} if window?
 module.exports = {expand,emit} if module?

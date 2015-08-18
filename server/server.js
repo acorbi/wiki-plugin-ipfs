@@ -1,5 +1,5 @@
 (function() {
-  var app, doCommand, http, io, io_port, startServer;
+  var app, doCommand, http, io, io_port, ipfs, ipfsAdd, ipfsApi, ipfsCat, ipfs_endpoint, ipfs_port, startServer;
 
   app = require('express')();
 
@@ -8,6 +8,14 @@
   io = require('socket.io')(http);
 
   io_port = '3001';
+
+  ipfs = null;
+
+  ipfsApi = require('ipfs-api');
+
+  ipfs_endpoint = '127.0.0.1';
+
+  ipfs_port = '5001';
 
   app.get('/', function(req, res) {
     return res.send('<h1>Hello world</h1>');
@@ -23,7 +31,44 @@
         'name': 'ack',
         'cmd': 'ping'
       });
+    } else if (param['name'] === 'cat') {
+      return ipfsCat(param['hash']);
+    } else if (param['name'] === 'add') {
+      return ipfsAdd(param['file']);
     }
+  };
+
+  ipfsAdd = function(file, cb) {
+    console.log('ipfsAdd ' + file.name);
+    return io.emit('cmd', {
+      'name': 'ack',
+      'cmd': 'add'
+    });
+  };
+
+  ipfsCat = function(hash) {
+    console.log('ipfsCat ' + hash);
+    return ipfs.cat(hash, function(err, res) {
+      var body, data;
+      data = new ArrayBuffer(100);
+      if (err || !res) {
+        return console.error(err);
+      } else {
+        if (res.readable) {
+          body = '';
+          res.on('data', function(chunk) {
+            return body += chunk;
+          });
+          return res.on('end', function() {
+            return io.emit('cmd', {
+              'name': 'ack',
+              'cmd': 'cat',
+              'data': body
+            });
+          });
+        }
+      }
+    });
   };
 
   startServer = function(params) {
@@ -37,6 +82,8 @@
       }
       return _results;
     })());
+    ipfs = ipfsApi(ipfs_endpoint, ipfs_port);
+    console.log('Initializing IpFs api on ' + ipfs_endpoint + ':' + ipfs_port + ' ' + ipfs);
     return io.on('connection', function(socket) {
       console.log('socket connection established');
       socket.on('disconnect', function() {
