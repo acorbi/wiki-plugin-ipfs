@@ -2,27 +2,16 @@
   var app, doCommand, http, io, io_port, ipfs, ipfsAdd, ipfsApi, ipfsCat, ipfs_endpoint, ipfs_port, startServer;
 
   app = require('express')();
-
   http = require('http').Server(app);
-
   io = require('socket.io')(http);
-
   io_port = '3001';
-
   ipfs = null;
-
   ipfsApi = require('ipfs-api');
-
   ipfs_endpoint = '127.0.0.1';
-
   ipfs_port = '5001';
 
-  app.get('/', function(req, res) {
-    return res.send('<h1>Hello world</h1>');
-  });
-
   http.listen(io_port, function() {
-    return console.log('Opening socket connection on port ' + io_port + ' to receive data from client');
+    return console.log('[SERVER] Opening socket connection on port ' + io_port + ' to receive data from client');
   });
 
   doCommand = function(param) {
@@ -39,7 +28,7 @@
   };
 
   ipfsAdd = function(file, cb) {
-    console.log('ipfsAdd ' + file.name);
+    console.log('[SERVER] ipfsAdd ' + file.name);
     return io.emit('cmd', {
       'name': 'ack',
       'cmd': 'add'
@@ -47,7 +36,7 @@
   };
 
   ipfsCat = function(hash) {
-    console.log('ipfsCat ' + hash);
+    console.log('[SERVER] ipfsCat ' + hash);
     return ipfs.cat(hash, function(err, res) {
       var body, data;
       data = new ArrayBuffer(100);
@@ -73,7 +62,7 @@
 
   startServer = function(params) {
     var k, v;
-    console.log('ipfs startServer', (function() {
+    console.log('[SERVER] ipfs startServer', (function() {
       var _results;
       _results = [];
       for (k in params) {
@@ -83,15 +72,15 @@
       return _results;
     })());
     ipfs = ipfsApi(ipfs_endpoint, ipfs_port);
-    console.log('Initializing IpFs api on ' + ipfs_endpoint + ':' + ipfs_port + ' ' + ipfs);
+    console.log('[SERVER] Initializing IpFs api on ' + ipfs_endpoint + ':' + ipfs_port + ' ' + ipfs);
     return io.on('connection', function(socket) {
-      console.log('socket connection established');
+      console.log('[SERVER] socket connection established');
       socket.on('disconnect', function() {
-        console.log('socket connection disconnected');
+        console.log('[SERVER] socket connection disconnected');
         return socket = null;
       });
       return socket.on('cmd', function(param) {
-        console.log('command received ' + param['name']);
+        console.log('[SERVER] command received ' + param['name']);
         return doCommand(param);
       });
     });

@@ -1,46 +1,42 @@
 (function() {
-  var bind, caption, content, emit, expand, initSocket, io, ipfsAdd, ipfsCat, pingServer, socket, socketCmdReceived, socketConnected, socketDisconnected, status;
 
-  io = require('socket.io-client');
+  var io = require('socket.io-client');
+  var http = require('http');
+  var socket = null;
+  var caption = null;
+  var content = null;
 
-  socket = null;
-
-  caption = null;
-
-  content = null;
-
-  initSocket = function() {
-    console.log('initSocket');
+  var initSocket = function() {
+    console.log('[CLIENT]  initSocket');
     socket = io('ws://localhost:3001');
     socket.on('connect', socketConnected);
     socket.on('disconnect', socketDisconnected);
     return socket.on('cmd', socketCmdReceived);
   };
 
-  socketConnected = function() {
+  var socketConnected = function() {
     console.log('socketConnected');
     return pingServer();
   };
 
-  socketDisconnected = function() {
+  var socketDisconnected = function() {
     console.log('socketDisconnected');
     return socket = null;
   };
 
-  socketCmdReceived = function(data) {
-    console.log('socketCmdReceived ' + data['name']);
+  var socketCmdReceived = function(data) {
     if (data['name'] === 'ack' && data['cmd'] === 'ping') {
-      return status('Ping acknoledged');
+      return status('[CLIENT] Ping acknoledged');
     } else if (data['name'] === 'ack' && data['cmd'] === 'add') {
-      return status('Add acknoledged');
+      return status('[CLIENT] Add acknoledged');
     } else if (data['name'] === 'ack' && data['cmd'] === 'cat') {
-      status('Cat acknoledged');
+      status('[CLIENT] Cat acknoledged');
       return content.html(data['data']);
     }
   };
 
-  pingServer = function() {
-    status('Pingin...');
+  var pingServer = function() {
+    status('[CLIENT] Pinging...');
     if (!socket) {
       initSocket;
     }
@@ -49,10 +45,10 @@
     });
   };
 
-  ipfsCat = function(hash) {
-    status('Running ipfsCat with hash ' + hash + '...');
+  var ipfsCat = function(hash) {
+    status('[CLIENT] Running ipfsCat with hash ' + hash + '...');
     if (!socket) {
-      initSocket;
+      initSocket();
     }
     return socket.emit('cmd', {
       'name': 'cat',
@@ -60,10 +56,10 @@
     });
   };
 
-  ipfsAdd = function(asset) {
-    status('Running ipfsAdd with asset ' + asset + '...');
+  var ipfsAdd = function(asset) {
+    status('[CLIENT] Running ipfsAdd with asset ' + asset + '...');
     if (!socket) {
-      initSocket;
+      initSocket();
     }
     return socket.emit('cmd', {
       'name': 'add',
@@ -71,35 +67,59 @@
     });
   };
 
-  status = function(statusText) {
+  var get = function(item) {
+    var options, request;
+    options = {
+      host: 'https://www.google.com'
+    };
+    request = http.get(options, function() {
+      return function(res) {
+        console.log(res);
+        var data;
+        data = '';
+        res.on('data', chunk(function() {
+          return data += chunk;
+        }));
+        return res.on('end', function() {
+          console.log(data);
+          return data;
+        });
+      };
+    });
+    return request.end;
+  };
+
+  var status = function(statusText) {
     if (caption !== null) {
       console.log(statusText);
       return caption.text(statusText);
     }
   };
 
-  expand = function(text) {
+  var expand = function(text) {
     return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\*(.+?)\*/g, '<i>$1</i>');
   };
 
-  emit = function($item, item) {
-    $item.append("<p style=\"background-color:#ccc;padding:15px;\">\n  " + (expand(item.text)) + "\n</p> \n<div class=\"content\"></div>\n<p class=\"caption\">Starting...</p>");
-    if (caption === null) {
-      caption = $item.find(".caption");
-    }
-    if (content === null) {
-      content = $item.find(".content");
-    }
+  var emit = function($item, item) {
+    // var content = get("https://ipfs.io/ipfs/" + item.text);
+    // console.log(content);
+    // $item.append("<p style=\"background-color:#ccc;padding:15px;\">\n  " + (expand(item.text)) + "\n  expand content\n</p>\n<div class=\"content\"></div>\n<p class=\"caption\">Starting...</p>");
+    // if (caption === null) {
+    //   caption = $item.find(".caption");
+    // }
+    // if (content === null) {
+    //   content = $item.find(".content");
+    // }
     if (socket === null) {
       return initSocket();
     }
+    ipfsCat(item.text);
   };
 
-  bind = function($item, item) {
-    $item.dblclick(function() {
+  var bind = function($item, item) {
+    return $item.dblclick(function() {
       return wiki.textEditor($item, item);
     });
-    return ipfsCat(item.text);
   };
 
   if (typeof window !== "undefined" && window !== null) {
@@ -117,5 +137,3 @@
   }
 
 }).call(this);
-
-//# sourceMappingURL=ipfs_src.js.map
