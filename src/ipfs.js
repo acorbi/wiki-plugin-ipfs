@@ -4,33 +4,33 @@
   var http = require('http');
   var ipfsAPI = require('ipfs-api');
   var ipfs = ipfsAPI(config().ipfsHost, config().ipfsPort);
-  var caption = null;
-  var content = null;
+  var contentDiv = null;
 
   var expand = function(text) {
     return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\*(.+?)\*/g, '<i>$1</i>');
   };
 
+  var displayContent = function(content){
+    contentDiv.html(content);
+  };
+
   var emit = function($item, item) {
-    console.log("emit");
-    $item.append("<p style=\"background-color:#ccc;padding:15px;\">\n  " + (expand(item.text)) + "\n</p> \n<div class=\"content\"></div>\n");
-    if (content === null) {
-      content = $item.find(".content");
-    }
+    $item.html("<div class=\"content\">"+ (expand(item.text)) +"</div>");
+    contentDiv = $item.find(".content");
+
     ipfs.cat(item.text, function(err, res) {
       if (err || !res) return console.error(err);
 
       if (res.readable) {
         res.pipe(process.stdout);
       } else {
-        content.html(res);
+        displayContent(res);
       }
     });
 
   };
 
   var bind = function($item, item) {
-    console.log("bind");
     return $item.dblclick(function() {
       return wiki.textEditor($item, item);
     });
