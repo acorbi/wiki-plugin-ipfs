@@ -35,7 +35,7 @@ module.exports = function(grunt) {
 
     watch: {
       all: {
-        files: ['client/ipfs_src.js', 'server/server.js', 'test/*.js'],
+        files: ['client/ipfs_src.js', 'test/*.js'],
         tasks: ['browserify', 'mochaTest'] //
       }
     }

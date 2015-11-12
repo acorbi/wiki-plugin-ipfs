@@ -1,76 +1,15 @@
 (function() {
 
-  var io = require('socket.io-client');
   var http = require('http');
-  var socket = null;
+  var ipfsAPI = require('ipfs-api');
+  var ipfs = ipfsAPI('localhost', '5001');
   var caption = null;
   var content = null;
 
-  var initSocket = function() {
-    console.log('[CLIENT]  initSocket');
-    socket = io('ws://localhost:3001');
-    socket.on('connect', socketConnected);
-    socket.on('disconnect', socketDisconnected);
-    return socket.on('cmd', socketCmdReceived);
-  };
-
-  var socketConnected = function() {
-    console.log('socketConnected');
-    return pingServer();
-  };
-
-  var socketDisconnected = function() {
-    console.log('socketDisconnected');
-    return socket = null;
-  };
-
-  var socketCmdReceived = function(data) {
-    if (data['name'] === 'ack' && data['cmd'] === 'ping') {
-      return status('[CLIENT] Ping acknoledged');
-    } else if (data['name'] === 'ack' && data['cmd'] === 'add') {
-      return status('[CLIENT] Add acknoledged');
-    } else if (data['name'] === 'ack' && data['cmd'] === 'cat') {
-      status('[CLIENT] Cat acknoledged');
-      return content.html(data['data']);
-    }
-  };
-
-  var pingServer = function() {
-    status('[CLIENT] Pinging...');
-    if (!socket) {
-      initSocket;
-    }
-    return socket.emit('cmd', {
-      'name': 'ping'
-    });
-  };
-
-  var ipfsCat = function(hash) {
-    status('[CLIENT] Running ipfsCat with hash ' + hash + '...');
-    if (!socket) {
-      initSocket();
-    }
-    return socket.emit('cmd', {
-      'name': 'cat',
-      'hash': hash
-    });
-  };
-
-  var ipfsAdd = function(asset) {
-    status('[CLIENT] Running ipfsAdd with asset ' + asset + '...');
-    if (!socket) {
-      initSocket();
-    }
-    return socket.emit('cmd', {
-      'name': 'add',
-      'asset': asset
-    });
-  };
-
-  var get = function(item) {
+  var get = function(hash) {
     var options, request;
     options = {
-      host: 'https://www.google.com'
+      host: 'localhost:4001/ipfs/' + hash
     };
     request = http.get(options, function() {
       return function(res) {
@@ -101,25 +40,33 @@
   };
 
   var emit = function($item, item) {
-    // var content = get("https://ipfs.io/ipfs/" + item.text);
-    // console.log(content);
-    // $item.append("<p style=\"background-color:#ccc;padding:15px;\">\n  " + (expand(item.text)) + "\n  expand content\n</p>\n<div class=\"content\"></div>\n<p class=\"caption\">Starting...</p>");
-    // if (caption === null) {
-    //   caption = $item.find(".caption");
-    // }
-    // if (content === null) {
-    //   content = $item.find(".content");
-    // }
-    if (socket === null) {
-      return initSocket();
+    $item.append("<p style=\"background-color:#ccc;padding:15px;\">\n  " + (expand(item.text)) + "\n</p> \n<div class=\"content\"></div>\n<p class=\"caption\">Starting...</p>");
+    if (caption === null) {
+      caption = $item.find(".caption");
     }
-    ipfsCat(item.text);
+    if (content === null) {
+      content = $item.find(".content");
+    }
+    ipfs.cat(item.text, function(err, res) {
+    if(err || !res) return console.error(err);
+
+    if(res.readable) {
+        // Returned as a stream
+        res.pipe(process.stdout);
+    } else {
+        // Returned as a string
+        console.log(res);
+        content.html(res);
+    }
+  });
+
   };
 
   var bind = function($item, item) {
     return $item.dblclick(function() {
       return wiki.textEditor($item, item);
     });
+
   };
 
   if (typeof window !== "undefined" && window !== null) {
