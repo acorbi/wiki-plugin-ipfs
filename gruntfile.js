@@ -13,7 +13,7 @@ module.exports = function(grunt) {
 
     browserify: {
       build: {
-        src: 'client/ipfs_src.js',
+        src: 'src/**.js',
         dest: 'client/ipfs.js',
         options: {
           debug: true,
@@ -30,12 +30,13 @@ module.exports = function(grunt) {
           reporter: 'spec'
         },
         src: ['test/**/*.js']
+        
       }
     },
 
     watch: {
       all: {
-        files: ['client/ipfs_src.js', 'server/server.js', 'test/*.js'],
+        files: ['src/*.js', 'test/*.js'],
         tasks: ['browserify', 'mochaTest'] //
       }
     }

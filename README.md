@@ -6,24 +6,30 @@ This plugin, type: ipfs, extends the functionalities of Federated Wiki allowing 
 
 * **Implement ipfs' cat method to obtain binary data from assets and embed it on the plugin's paragraph.**
 
-  status: Implementing ( Asset's binary data is being pulled from ipfs by the server logic and sent to and displayed by the client via sockets )
- 
+  status: Implementing
+
 * **Implement ipfs' add method to push an asset from FedWiki ( optimally per dra-and-drop) into ipfs.**
 
   status: Planned
-  
+
 ## Build
-  
+
 ```
 npm install
 grunt build
 ```
 
-## Install 
+## Develop
+
+```
+npm install
+grunt build; grunt watch;
+```
+
+## Install
 
   Follow guides on http://plugins.fed.wiki.org/view/welcome-visitors/view/about-plugins
 
 ## License
 
 MIT
-
