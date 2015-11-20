@@ -13,7 +13,7 @@ module.exports = function(grunt) {
 
     browserify: {
       build: {
-        src: 'src/**.js',
+        src: 'src/client.js',
         dest: 'client/ipfs.js',
         options: {
           debug: true,
@@ -30,19 +30,18 @@ module.exports = function(grunt) {
           reporter: 'spec'
         },
         src: ['test/**/*.js']
-        
+
       }
     },
 
     watch: {
       all: {
         files: ['src/*.js', 'test/*.js'],
-        tasks: ['browserify', 'mochaTest'] //
+        tasks: ['browserify','build', 'mochaTest']
       }
     }
   });
 
-  grunt.registerTask('build', ['browserify', 'mochaTest']); //'browserify',
+  grunt.registerTask('build', ['browserify', 'mochaTest']);
   grunt.registerTask('default', ['build']);
-
 };
